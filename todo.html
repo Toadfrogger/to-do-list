@@ -1,0 +1,99 @@
+<script>
+  // Changed to 'let' so it can be updated if you implement localStorage persistence later
+  let tasksArray = [
+    { name: "Task No1", status: "active" },
+    { name: "Task No2", status: "active" },
+    { name: "Task No3", status: "active" },
+  ];
+
+  function render() {
+    localStorage.setItem("tasks", JSON.stringify(tasksArray));
+
+    const taskHTML = tasksArray.map(
+      (task, index) => `
+      <div class="group transition border-b border-black flex items-center text-[18px] p-2 w-[520px]">
+        <!-- Added conditional 'line-through' class check right here -->
+        <div id="taskName${index}" class="flex items-center w-full gap-2 justify-around ${task.status === "completed" ? "line-through text-gray-400" : ""}">
+          <input type="checkbox" onclick="toggleTask(${index})" ${task.status === "completed" ? "checked" : ""} />
+          <div>${task.name}</div>
+          <div class="ml-auto flex gap-1 text-[12px]" id="actionButtons${index}">
+            <button onclick="DeleteTask(${index})" class=" text-gray p-1 rounded-md hidden group-hover:block">Delete</button>
+            <button onclick="EditTask(${index})" class=" text-gray p-1 rounded-md hidden group-hover:block">Edit</button>
+          </div>
+        </div>
+        <div class="flex justify-around items-center gap-2 w-full">
+          <input type="text" id="editTask${index}" class="hidden border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 w-[336px] h-[38px] text-black text-medium placeholder-gray-600" value="${task.name}" />
+          <div class="ml-auto flex gap-1 text-[12px] hidden" id="editButtons${index}">
+            <button onclick="saveEdit(${index})">Save</button>
+            <button onclick="cancelEdit(${index})">Cancel</button>
+          </div>
+        </div>
+      </div>`,
+    );
+    document.getElementById("tasks").innerHTML = taskHTML.join("");
+  }
+
+  // Initial render on page load
+  render();
+
+  function toggleTask(index) {
+    // Toggle status
+    tasksArray[index].status =
+      tasksArray[index].status === "active" ? "completed" : "active";
+    // Simply render again; the template handles adding/removing line-through now
+    render();
+  }
+
+  function cancelEdit(index) {
+    document.getElementById(`editTask${index}`).classList.toggle("hidden");
+    document.getElementById(`actionButtons${index}`).classList.toggle("hidden");
+    document.getElementById(`editButtons${index}`).classList.toggle("hidden");
+    document.getElementById(`taskName${index}`).classList.toggle("hidden");
+  }
+
+  function saveEdit(index) {
+    const newName = document.getElementById(`editTask${index}`).value;
+    if (newName) {
+      tasksArray[index].name = newName;
+      render();
+    }
+  }
+
+  function EditTask(index) {
+    document.getElementById(`editTask${index}`).classList.toggle("hidden");
+    document.getElementById(`actionButtons${index}`).classList.toggle("hidden");
+    document.getElementById(`editButtons${index}`).classList.toggle("hidden");
+    document.getElementById(`taskName${index}`).classList.toggle("hidden");
+    document.getElementById(`editTask${index}`).value = tasksArray[index].name;
+  }
+
+  function addTask() {
+    const taskName = prompt("Add task");
+    if (taskName) {
+      tasksArray.push({ name: taskName, status: "active" });
+      render();
+    }
+  }
+
+  function toggleTheme() {
+    const body = document.getElementById("body");
+    body.classList.toggle("bg-mist-800");
+    body.classList.toggle("text-white");
+    const taskItems = document.querySelectorAll("#tasks .border-b");
+    taskItems.forEach((item) => {
+      item.classList.toggle("border-indigo-400");
+    });
+    body.classList.toggle("placeholder-gray-100");
+    document.getElementById("tasks").classList.toggle("text-white");
+    document.getElementById("night").classList.toggle("hidden");
+    document.getElementById("morning").classList.toggle("hidden");
+    document.getElementById("header").classList.toggle("text-white");
+  }
+
+  function DeleteTask(index) {
+    if (confirm("Are you sure?")) {
+      tasksArray.splice(index, 1);
+      render();
+    }
+  }
+</script>

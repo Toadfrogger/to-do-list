@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+  <body class="bg-white-100 text-black" id="body">
+    <div
+      class="m-auto w-[710px] h-[760px] text-black text-medium text-center p-5"
+      id="bodymain"
+    >
+      <h1 id="header" class="text-lg text-bold p-4">TODO LIST</h1>
+
+      <div class="p-4 flex justify-around flex-row gap-1">
+        <input
+          type="text"
+          placeholder="Search notes..."
+          class="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 w-[536px] h-[38px] text-black text-medium placeholder-gray-600"
+        />
+
+        <div
+          class="bg-indigo-400 text-white p-2 rounded-md w-[93px] h-[38px] border border-indigo-400 rounded-md flex items-center justify-around gap-2"
+        >
+          ALL
+
+          <i>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-chevron-down preview-icon"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </i>
+        </div>
+
+        <button
+          onclick="toggleTheme()"
+          class="bg-indigo-400 rounded-md p-1 h-[38px] w-[38px] flex items-center justify-center"
+        >
+          <i class="block" id="night"
+            ><svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#ffffff"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-moon preview-icon"
+            >
+              <path
+                d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"
+              /></svg
+          ></i>
+          <i class="hidden" id="morning">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#ffffff"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-sun preview-icon"
+            >
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2" />
+              <path d="M12 20v2" />
+              <path d="m4.93 4.93 1.41 1.41" />
+              <path d="m17.66 17.66 1.41 1.41" />
+              <path d="M2 12h2" />
+              <path d="M20 12h2" />
+              <path d="m6.34 17.66-1.41 1.41" />
+              <path d="m19.07 4.93-1.41 1.41" />
+            </svg>
+          </i>
+        </button>
+        <!-- flex div end -->
+      </div>
+
+      <div id="tasks" class="m-auto flex flex-col gap-2"></div>
+
+      <div
+        class="ml-auto w-[40px] h-[40px] bg-indigo-400 text-white rounded-full items-center flex justify-center"
+        onclick="addTask()"
+      >
+        +
+      </div>
+
+      <!-- main div ending -->
+    </div>
+
+    <script>
+      const tasksArray = [
+        { name: "Task No1", status: "active" },
+        { name: "Task No2", status: "active" },
+        { name: "Task No3", status: "active" },
+      ];
+
+      function render() {
+        localStorage.setItem("tasks", JSON.stringify(tasksArray));
+        const tasksString = localStorage.getItem("tasks");
+
+        const taskHTML = tasksArray.map(
+          (task, index) =>
+            `
+            <div class="group transition border-b border-black flex items-center text-[18px] p-2 w-[520px]">
+              
+              <div id="taskName${index}" class="flex items-center w-full gap-2 justify-around ">
+                <input type="checkbox" onclick="toggleTask(${index})" ${task.status === "completed" ? "checked" : ""} />
+               <div>${task.name}</div>
+
+                <div class="ml-auto flex gap-1 text-[12px]" id="actionButtons${index}">
+                 <button onclick="DeleteTask(${index})" class=" text-gray p-1 rounded-md hidden group-hover:block">Delete</button>
+                 <button onclick="EditTask(${index})" class=" text-gray p-1 rounded-md hidden group-hover:block">Edit</button>
+                </div>
+              </div>
+
+              <div class="flex justify-around items-center gap-2 w-full"> 
+                <input type="text" id="editTask${index}" class="hidden border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 w-[336px] h-[38px] text-black text-medium placeholder-gray-600" value="${task.name}" />
+
+               <div class="ml-auto flex gap-1 text-[12px] hidden" id="editButtons${index}"> 
+                 <button onclick="saveEdit(${index})">Save</button>
+                 <button onclick="cancelEdit(${index})">Cancel</button>
+               </div>
+              </div>
+            </div>`,
+        );
+        document.getElementById("tasks").innerHTML = taskHTML.join("");
+      }
+
+      render();
+
+      function toggleTask(index) {
+        tasksArray[index].status =
+          tasksArray[index].status === "active" ? "completed" : "active";
+        render();
+        console.log(tasksArray[index].status);
+
+        if (tasksArray[index].status === "completed") {
+          document
+            .getElementById(`taskName${index}`)
+            .classList.add("line-through");
+        }
+      }
+
+      function cancelEdit(index) {
+        document.getElementById(`editTask${index}`).classList.toggle("hidden");
+        document
+          .getElementById(`actionButtons${index}`)
+          .classList.toggle("hidden");
+        document
+          .getElementById(`editButtons${index}`)
+          .classList.toggle("hidden");
+        document.getElementById(`taskName${index}`).classList.toggle("hidden");
+      }
+
+      function saveEdit(index) {
+        const newName = document.getElementById(`editTask${index}`).value;
+
+        if (newName) {
+          tasksArray[index].name = newName;
+          render();
+        }
+      }
+
+      function EditTask(index) {
+        document.getElementById(`editTask${index}`).classList.toggle("hidden");
+        document
+          .getElementById(`actionButtons${index}`)
+          .classList.toggle("hidden");
+        document
+          .getElementById(`editButtons${index}`)
+          .classList.toggle("hidden");
+        document.getElementById(`taskName${index}`).classList.toggle("hidden");
+        document.getElementById(`editTask${index}`).value =
+          tasksArray[index].name;
+      }
+
+      function addTask() {
+        const taskName = prompt("Add task");
+        if (taskName) {
+          tasksArray.push({ name: taskName, status: "active" });
+          render();
+        }
+      }
+
+      function toggleTheme() {
+        const body = document.getElementById("body");
+        body.classList.toggle("bg-mist-800");
+        body.classList.toggle("text-white");
+        const taskItems = document.querySelectorAll("#tasks .border-b");
+        taskItems.forEach((item) => {
+          item.classList.toggle("border-indigo-400");
+        });
+        body.classList.toggle("placeholder-gray-100");
+
+        document.getElementById("tasks").classList.toggle("text-white");
+
+        document.getElementById("night").classList.toggle("hidden");
+        document.getElementById("morning").classList.toggle("hidden");
+        document.getElementById("header").classList.toggle("text-white");
+      }
+
+      const checkbox = document.querySelector('input[type="checkbox"]');
+
+      checkbox.addEventListener("change", function (index) {
+        if (this.checked) {
+          render();
+        }
+      });
+
+      function DeleteTask(index) {
+        if (confirm("Are you sure?")) {
+          tasksArray.splice(index, 1);
+          render();
+        }
+      }
+    </script>
+  </body>
+</html>
